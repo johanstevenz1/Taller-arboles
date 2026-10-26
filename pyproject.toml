@@ -1,0 +1,8 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--cov=backend.models --cov-branch --cov-report=term-missing --cov-fail-under=81"
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
