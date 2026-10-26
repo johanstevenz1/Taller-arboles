@@ -43,8 +43,10 @@ class InventoryService:
     def traverse(self, order: TraversalOrder) -> dict[str, Any]:
         """Return traversal results in O(n) time."""
         with self._lock:
-            return {"order": order,
-                    "nodes": [node.to_dict() for node in self.tree.traverse(order)]}
+            return {
+                "order": order,
+                "nodes": [node.to_dict() for node in self.tree.traverse(order)],
+            }
 
     def load_example(self, products: list[dict[str, Any]]) -> dict[str, Any]:
         """Atomically replace the inventory in O(n log n) time."""

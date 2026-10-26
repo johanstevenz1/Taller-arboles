@@ -20,6 +20,7 @@ def build_tree(keys: list[int]) -> InventoryTree:
 
 def assert_invariants(tree: InventoryTree, expected: set[int]) -> None:
     """Independently verify ordering, actual heights, balance, and cached size."""
+
     def inspect(node: Node | None, lower: float, upper: float) -> int:
         """Recompute height recursively without trusting cached values."""
         if node is None:
@@ -49,12 +50,19 @@ def test_empty_tree_and_missing_operations() -> None:
     for operation in [tree.find, tree.remove]:
         with pytest.raises(NodeNotFoundError):
             operation(1)
-    assert tree.stats() == {"size": 0, "height": -1, "leaves": 0,
-                            "total_quantity": 0, "root": None, "balanced": True}
+    assert tree.stats() == {
+        "size": 0,
+        "height": -1,
+        "leaves": 0,
+        "total_quantity": 0,
+        "root": None,
+        "balanced": True,
+    }
 
 
-@pytest.mark.parametrize("keys", [[30, 20, 10], [10, 20, 30],
-                                 [30, 10, 20], [10, 30, 20]])
+@pytest.mark.parametrize(
+    "keys", [[30, 20, 10], [10, 20, 30], [30, 10, 20], [10, 30, 20]]
+)
 def test_all_four_insert_rotations(keys: list[int]) -> None:
     """Cover single and double rotations for both balance directions."""
     tree = build_tree(keys)
@@ -72,12 +80,15 @@ def test_duplicate_insert_does_not_mutate_tree() -> None:
     assert tree.size == 3
 
 
-@pytest.mark.parametrize("order,expected", [
-    ("preorder", [40, 20, 10, 30, 60, 50, 70]),
-    ("inorder", [10, 20, 30, 40, 50, 60, 70]),
-    ("postorder", [10, 30, 20, 50, 70, 60, 40]),
-    ("level-order", [40, 20, 60, 10, 30, 50, 70]),
-])
+@pytest.mark.parametrize(
+    "order,expected",
+    [
+        ("preorder", [40, 20, 10, 30, 60, 50, 70]),
+        ("inorder", [10, 20, 30, 40, 50, 60, 70]),
+        ("postorder", [10, 30, 20, 50, 70, 60, 40]),
+        ("level-order", [40, 20, 60, 10, 30, 50, 70]),
+    ],
+)
 def test_traversal_orders(order: str, expected: list[int]) -> None:
     """Compare traversals against manually determined sequences."""
     tree = build_tree([40, 20, 60, 10, 30, 50, 70])
@@ -91,12 +102,19 @@ def test_invalid_traversal() -> None:
             tree.traverse("diagonal")
 
 
-@pytest.mark.parametrize("keys,target", [
-    ([20], 20), ([20, 10], 20), ([20, 30], 20),
-    ([20, 10, 30], 10), ([20, 10, 30, 5], 10),
-    ([20, 10, 30, 40], 30), ([40, 20, 60, 10, 30, 50, 70, 45, 55], 40),
-    ([40, 20, 60, 10, 30, 50, 70], 20),
-])
+@pytest.mark.parametrize(
+    "keys,target",
+    [
+        ([20], 20),
+        ([20, 10], 20),
+        ([20, 30], 20),
+        ([20, 10, 30], 10),
+        ([20, 10, 30, 5], 10),
+        ([20, 10, 30, 40], 30),
+        ([40, 20, 60, 10, 30, 50, 70, 45, 55], 40),
+        ([40, 20, 60, 10, 30, 50, 70], 20),
+    ],
+)
 def test_delete_leaf_one_child_two_children_and_root(
     keys: list[int], target: int
 ) -> None:
@@ -104,7 +122,9 @@ def test_delete_leaf_one_child_two_children_and_root(
     tree = build_tree(keys)
     removed = tree.remove(target)
     assert (removed.sku, removed.name, removed.quantity) == (
-        target, f"Product {target}", target
+        target,
+        f"Product {target}",
+        target,
     )
     assert_invariants(tree, set(keys) - {target})
     for key in set(keys) - {target}:
@@ -134,8 +154,14 @@ def test_json_serialization_and_statistics() -> None:
     assert data["sku"] == 20 and data["balance"] == 0
     assert data["left"]["sku"] == 10 and data["right"]["sku"] == 30
     assert data["left"]["left"] is None
-    assert tree.stats() == {"size": 3, "height": 1, "leaves": 2,
-                            "total_quantity": 60, "root": 20, "balanced": True}
+    assert tree.stats() == {
+        "size": 3,
+        "height": 1,
+        "leaves": 2,
+        "total_quantity": 60,
+        "root": 20,
+        "balanced": True,
+    }
 
 
 def test_sorted_input_stays_logarithmic() -> None:

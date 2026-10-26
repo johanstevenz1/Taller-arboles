@@ -59,8 +59,10 @@ class InventoryTree:
                 current = current.left if sku < current.sku else current.right
             return [], path
         nodes = self.traverse("inorder")
-        return ([node for node in nodes if query.casefold() in node.name.casefold()],
-                [node.sku for node in nodes])
+        return (
+            [node for node in nodes if query.casefold() in node.name.casefold()],
+            [node.sku for node in nodes],
+        )
 
     def remove(self, sku: int) -> Node:
         """Delete a SKU, retaining its children, in O(log n) time."""
@@ -98,7 +100,8 @@ class InventoryTree:
         """Compute inventory statistics in O(n) time and O(n) space."""
         nodes = self.traverse("inorder")
         return {
-            "size": self.size, "height": self.height,
+            "size": self.size,
+            "height": self.height,
             "leaves": sum(node.left is None and node.right is None for node in nodes),
             "total_quantity": sum(node.quantity for node in nodes),
             "root": self.root.sku if self.root else None,
@@ -174,7 +177,9 @@ class InventoryTree:
             while successor.left:
                 successor = successor.left
             root.sku, root.name, root.quantity = (
-                successor.sku, successor.name, successor.quantity
+                successor.sku,
+                successor.name,
+                successor.quantity,
             )
             root.right = self._remove(root.right, successor.sku)
         return self._rebalance(root)
@@ -194,6 +199,9 @@ class InventoryTree:
     def _serialize(self, node: Node | None) -> dict[str, Any] | None:
         if node is None:
             return None
-        return {**node.to_dict(), "balance": self._balance(node),
-                "left": self._serialize(node.left),
-                "right": self._serialize(node.right)}
+        return {
+            **node.to_dict(),
+            "balance": self._balance(node),
+            "left": self._serialize(node.left),
+            "right": self._serialize(node.right),
+        }

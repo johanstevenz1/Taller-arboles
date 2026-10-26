@@ -8,7 +8,7 @@ from backend.exceptions import InvalidNodeError
 
 @dataclass(slots=True)
 class Node:
-    """Store one product and two child links. Construction is O(1)."""
+    """Store one product and two child links. Construction is O(m) for name length m."""
 
     sku: int
     name: str
@@ -31,5 +31,10 @@ class Node:
 
     def to_dict(self) -> dict[str, Any]:
         """Return flat, JSON-compatible product data in O(1) time."""
-        return {"id": self.sku, "sku": self.sku, "name": self.name,
-                "quantity": self.quantity, "height": self.height}
+        return {
+            "id": self.sku,
+            "sku": self.sku,
+            "name": self.name,
+            "quantity": self.quantity,
+            "height": self.height,
+        }

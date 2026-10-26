@@ -19,8 +19,13 @@ def client() -> Iterator[TestClient]:
 def test_frontend_and_empty_endpoints(client: TestClient) -> None:
     """Serve static assets and valid empty-tree responses."""
     assert client.get("/").status_code == 200
-    for path in ["/static/js/main.js", "/static/js/messages.js",
-                 "/static/css/styles.css", "/docs", "/openapi.json"]:
+    for path in [
+        "/static/js/main.js",
+        "/static/js/messages.js",
+        "/static/css/styles.css",
+        "/docs",
+        "/openapi.json",
+    ]:
         assert client.get(path).status_code == 200
     assert client.get("/api/tree").json()["root"] is None
     assert client.get("/api/stats").json()["height"] == -1
@@ -32,9 +37,14 @@ def test_frontend_and_empty_endpoints(client: TestClient) -> None:
 def test_full_inventory_lifecycle(client: TestClient) -> None:
     """Exercise add, lookup, traversal, deletion, and final statistics."""
     for sku in [40, 20, 60, 10, 30, 50, 70]:
-        response = client.post("/api/nodes", json={
-            "sku": sku, "name": f"Product {sku}", "quantity": 2,
-        })
+        response = client.post(
+            "/api/nodes",
+            json={
+                "sku": sku,
+                "name": f"Product {sku}",
+                "quantity": 2,
+            },
+        )
         assert response.status_code == 201
         assert response.json()["id"] == sku
     assert client.get("/api/stats").json()["total_quantity"] == 14
@@ -66,13 +76,20 @@ def test_duplicate_and_missing_errors(client: TestClient) -> None:
     assert client.get("/api/stats").json()["size"] == 1
 
 
-@pytest.mark.parametrize("product", [
-    {}, {"sku": 0, "name": "Product"}, {"sku": True, "name": "Product"},
-    {"sku": 2.5, "name": "Product"}, {"sku": 1, "name": "   "},
-    {"sku": 1, "name": "x" * 61}, {"sku": 1, "name": "Product", "quantity": -1},
-    {"sku": 1, "name": "Product", "quantity": True},
-    {"sku": 1, "name": "Product", "extra": 1},
-])
+@pytest.mark.parametrize(
+    "product",
+    [
+        {},
+        {"sku": 0, "name": "Product"},
+        {"sku": True, "name": "Product"},
+        {"sku": 2.5, "name": "Product"},
+        {"sku": 1, "name": "   "},
+        {"sku": 1, "name": "x" * 61},
+        {"sku": 1, "name": "Product", "quantity": -1},
+        {"sku": 1, "name": "Product", "quantity": True},
+        {"sku": 1, "name": "Product", "extra": 1},
+    ],
+)
 def test_invalid_request_data(client: TestClient, product: dict) -> None:
     """Reject invalid JSON fields with a translatable validation code."""
     response = client.post("/api/nodes", json=product)
@@ -83,8 +100,12 @@ def test_invalid_request_data(client: TestClient, product: dict) -> None:
 
 def test_invalid_routes_and_queries(client: TestClient) -> None:
     """Reject missing search queries, unknown traversals, and invalid IDs."""
-    for path in ["/api/search", "/api/search?query=", "/api/traversal/diagonal",
-                 "/api/nodes/not-a-number"]:
+    for path in [
+        "/api/search",
+        "/api/search?query=",
+        "/api/traversal/diagonal",
+        "/api/nodes/not-a-number",
+    ]:
         response = client.delete(path) if "/nodes/" in path else client.get(path)
         assert response.status_code == 422
         assert response.json()["code"] == "invalid_input"
@@ -109,14 +130,22 @@ def test_interactive_capacity(client: TestClient) -> None:
     response = client.post("/api/nodes", json={"sku": 500, "name": "Extra"})
     assert response.status_code == 409
     assert response.json() == {"code": "capacity_reached"}
-    assert client.post("/api/example", json=products + [{"sku": 900, "name": "Extra"}]).status_code == 422
+    assert (
+        client.post(
+            "/api/example", json=products + [{"sku": 900, "name": "Extra"}]
+        ).status_code
+        == 422
+    )
 
 
 def test_concurrent_inserts_preserve_state(client: TestClient) -> None:
     """Concurrent API requests must not corrupt counters or structure."""
+
     def insert(sku: int) -> int:
         """Insert one product from a worker thread."""
-        return client.post("/api/nodes", json={"sku": sku, "name": "Product"}).status_code
+        return client.post(
+            "/api/nodes", json={"sku": sku, "name": "Product"}
+        ).status_code
 
     with ThreadPoolExecutor(max_workers=8) as executor:
         statuses = list(executor.map(insert, range(1, 41)))

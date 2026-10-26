@@ -70,7 +70,9 @@ def get_stats(inventory: Inventory) -> dict[str, Any]:
 
 @router.post("/example")
 def load_example(
-    products: Annotated[list[ProductInput], Field(min_length=1, max_length=MAX_PRODUCTS)],
+    products: Annotated[
+        list[ProductInput], Field(min_length=1, max_length=MAX_PRODUCTS)
+    ],
     inventory: Inventory,
 ) -> dict[str, Any]:
     """Replace the inventory atomically with an example in O(n log n)."""
